@@ -7,7 +7,7 @@ c     this code compares energies in 3D vs original 1D profile
       parameter(Msun=1.9891d33,Rsun=6.9599d10,G=6.67390d-8) 
       
       integer nmax_sph
-      parameter (nmax_sph=500000)
+      parameter (nmax_sph=1000000)
 
       integer nmax_vars, nvars
       parameter (nmax_vars=50)

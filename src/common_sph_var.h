@@ -1,7 +1,7 @@
       implicit none
 c Define the maximum number of particles
       integer nmax
-      parameter(nmax=300000)
+      parameter(nmax=1000000)
 c Definition of variables
       integer ntot,nnopt,nout,nit,nav,ngr,nrelax,cc(nmax)
       real*8 hmin,hmax,sep0,tf,dtout,t,alpha,beta,

@@ -124,7 +124,7 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
          call opacfile
       endif
 
-      open(10,file='orbit.dat',status='unknown')
+      open(20,file='orbit.dat',status='unknown')
  
       do i=ni,nf,ns
          call read_file(i,flag_read)
@@ -137,7 +137,7 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
          end if
       enddo
 
-      close(10)
+      close(20)
 
  42   continue ! happy end
 

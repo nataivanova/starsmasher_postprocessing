@@ -420,7 +420,7 @@ C particles around m1 and m2
       vy1c = vy(1) + omeg * x1c
       vz1c = vz(1)
       
-      write(10,*) nout,t*tunit,sep,x1c,y1c,z1c,vx1c*vunit,vy1c*vunit,vz1c*vunit
+      write(20,*) nout,t*tunit,sep,x1c,y1c,z1c,vx1c*vunit,vy1c*vunit,vz1c*vunit
 
       write(*,*)"fraction of mass",XXX,YYY
       
@@ -569,5 +569,7 @@ c     if you change here, do chage the reading in sorted.f!
      &        ' star_2'
       end if
 
+      close(10)
+      
  42   continue
       end

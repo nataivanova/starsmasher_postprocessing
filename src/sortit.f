@@ -3,14 +3,13 @@
       implicit none
 
       integer nmax_sph
-      parameter (nmax_sph=500000)
-      integer max_im
-      parameter (max_im=10000)
+      parameter (nmax_sph=800000)
+      integer max_im, max_in
+      parameter (max_im=5000, max_in=1000)
 
       integer :: num_args, ix
       character(len=12), dimension(:), allocatable :: args
       integer :: ni,nf,ns
-
       
       integer i,j, k, l, modnum, maxn, maxl, it, im, n, m
       integer num1, num2, numf
@@ -24,7 +23,7 @@
       integer cestat(nmax_sph)
       integer cestats(nmax_sph)
       integer list(nmax_sph)
-      integer sr(max_im,nmax_sph), listsr(max_im),innmax(max_im)
+      integer sr(max_im,max_in), listsr(max_im),innmax(max_im)
       real*8 mass_min, mass_max, age_min, age_max
       real wconv, w, rmin, rcur
 
@@ -118,25 +117,8 @@ c      write(*,*) "number of arguments", num_args
 c     input has that many lines (maximum)
       maxl=nmax_sph
 
-      inmax=100
-      immax=maxl/inmax
-      write(*,*) "sorting using ", inmax, immax
-      write(*,*) "reading from ", ni, " to ", nf , " skipping ", ns 
-
-
-      xco=0.
-      yco=0.
-      zco=0.
 
       do numf=ni,nf,ns
-
-         do m=1, 1000
-            do n=1,100000
-               sr(m,n)=-1
-            end do
-            listsr(m)=1
-         end do
-
 
          write(LIF,'(I4)') numf
          read(LIF,'(4A)') prnt
@@ -153,6 +135,7 @@ c     input has that many lines (maximum)
             cycle
          endif
 
+
 c     read this profile file
 
          do i=1,nmax_sph
@@ -164,14 +147,18 @@ c     read this profile file
          end do
          maxl=nmax_sph
 
+         xco=0.
+         yco=0.
+         zco=0.
+         read(1, *, end=99)
 C     sanity check: this has to have same number of inputs as output from classifaction.f
          do i=1,maxl
             read(1, *, end=99) (ce(j,i), j=1,19), cebin
             cestat(i)=1
             if(cebin(1:1).EQ.'c') cestat(i)=2
-            ce(25,i)=sqrt( (ce(1,i))**2 
-     &           + (ce(2,i))**2
-     &           + (ce(3,i))**2)
+            ce(25,i)=sqrt( (ce(1,i)-ce(1,1))**2 
+     &           + (ce(2,i)-ce(2,1))**2
+     &           + (ce(3,i)-ce(3,1))**2)
             if(ce(4,i).ge.0.049.and.i.gt.100.and.ce(5,i).le.1e-20) then
                maxl=i
                xco=ce(1,i)
@@ -184,6 +171,23 @@ C     sanity check: this has to have same number of inputs as output from classi
 
  99      maxl=i-1
          write(*,*) 'total lines', maxl
+         write(*,*) "core particle", ce(4,1)
+
+         inmax=100      
+         immax=(1000*ceiling(maxl/1000.))/inmax
+         if(immax.gt.5000) then
+            inmax=300
+            immax=maxl/inmax+1
+         end if
+         write(*,*) "sorting using ", inmax, immax
+         write(*,*) "reading from ", ni, " to ", nf , " skipping ", ns 
+
+         do m=1, immax
+            do n=1,inmax
+               sr(m,n)=-1
+            end do
+            listsr(m)=1
+         end do
 
          counter=1
          do m=1, immax
@@ -278,15 +282,20 @@ c     &           ce(13,sr(nmin,listsr(nmin)))
             listsr(nmin)=listsr(nmin)+1
             if(counter.eq.(maxl-1)) exit
          end do                     
-         
-         do i=2, maxl-2
-            do j=i+1,maxl-2
-               if(list(j).eq.list(i)) then
-                  write(*,*) "sorting error", list(i), list(j)
-                  stop
-               end if
+
+
+c     this is rather self-consistency check, only do for small files
+         if(maxl.le.100000) then 
+            do i=2, maxl-2
+               do j=i+1,maxl-2
+                  if(list(j).eq.list(i)) then
+                     write(*,*) "sorting error", list(i), list(j)
+                     stop
+                  end if
+               end do
             end do
-         end do
+         end if
+
 
          do i=2, maxl
             if(ces(25,i-1).gt.ces(25,i)) then
@@ -294,7 +303,6 @@ c     &           ce(13,sr(nmin,listsr(nmin)))
             end if
          end do
 
-         
          do i=2, maxl-1
             cestats(i)=cestat(list(i))
             do j=1,25
@@ -303,6 +311,7 @@ c     &           ce(13,sr(nmin,listsr(nmin)))
          end do
 
          write(*,*) "sorted ", filein, sortcount, sortcounttot, ce(25,2)
+         write(*,*) "core particle", ce(4,1), ces(4,1)
 
          fileout='sorted_'//prnt//'.dat'
          OPEN(2,FILE=fileout,STATUS='UNKNOWN', err=1003)
@@ -337,6 +346,7 @@ c     &           ce(13,sr(nmin,listsr(nmin)))
      &           + (ce(3,1)-ces(3,i))**2)
             epot1=epot1-1.907*ce(4,1)/rv  
 
+c     this is if there is a second core
             if(ces(25,maxl).le.ces(25,i)) then
                rv=sqrt( (ces(1,i)-ce(1,maxl))**2 
      &              + (ces(2,i)-ce(2,maxl))**2
