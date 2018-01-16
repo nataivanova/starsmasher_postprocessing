@@ -4,9 +4,10 @@ Nothing is perfect, use at your own risk. You can read about starsmasher here: h
 
 
 To install
+
 git clone https://github.com/nataivanova/starsmasher_postprocessing.git
 
-cd starsmasher_postprocessing
+cd starsmasher_postprocessing/src
 
 make all
 
