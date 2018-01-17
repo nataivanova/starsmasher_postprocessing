@@ -195,13 +195,13 @@ c     read mesa file
          
       open(2,file="energy_mesa.dat",status='unknown')
       do i=1,max_mesa       
-         write(2,*) m_mesa(i), eint_mesa(i), epot_mesa(i)
+         write(2,*) m_mesa(i), eint_mesa(i)/1.d44, epot_mesa(i)/1.d44, eisp_mesa(i), epsp_mesa(i)
       end do
       close(2)
       
       open(2,file="energy_sph.dat",status='unknown')
       do i=1,maxl
-         write(2,*) m_sph(i), eint_sph(i), epot_sph(i)
+         write(2,*) m_sph(i), eint_sph(i)/1.d44, epot_sph(i)/1.d44, ce(7,i), ce(10,i)
       end do
       close(2)
 
