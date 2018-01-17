@@ -96,7 +96,7 @@ c     parsing input
                   goto 42
                end if
                read(args(ix+1),*) file_mesa
-               write(*,*) "use SPH file ", file_mesa
+               write(*,*) "use MESA profile ", file_mesa
             end if
              
          end do

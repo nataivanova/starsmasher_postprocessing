@@ -9,7 +9,7 @@
 
       integer :: num_args, ix
       character(len=12), dimension(:), allocatable :: args
-      integer :: ni,nf,ns
+      integer :: ni,nf,ns, fegrav
       
       integer i,j, k, l, modnum, maxn, maxl, it, im, n, m
       integer num1, num2, numf
@@ -51,6 +51,7 @@ c     defaults
       ni=0
       nf=1000000
       ns=1
+      fegrav=0
       
 c     parsing input
       num_args = command_argument_count()
@@ -73,6 +74,7 @@ c      write(*,*) "number of arguments", num_args
                write(*,*) "-nf XXXX [1000000] end processing at outXXXX.sph "
                write(*,*) "-ns X [1] skip each X file"
                write(*,*) "          it skips all files it can't find, but its faster if ns is given"
+               write(*,*) "-egrav X [0] 1 - every particles integration for internal sphere"
                goto 42
             end if
             if(args(ix) == '-ni') then
@@ -111,12 +113,23 @@ c      write(*,*) "number of arguments", num_args
                   goto 42
                end if
             end if
-         end do
+            if(args(ix) == '-egrav') then
+               if((ix+1).gt.num_args) then
+                  write(*,*) "need an argument for egrav"
+                  goto 42
+               end if
+               read(args(ix+1),*) fegrav
+               write(*,*) "gravity flag: ", fegrav
+               if(fegrav.ne.0.and.fegrav.ne.1) then
+                  write(*,*) "egrav: allowed values are only 0 or 1"
+                  goto 42
+               end if
+            end if
+          end do
       end if
       
 c     input has that many lines (maximum)
       maxl=nmax_sph
-
 
       do numf=ni,nf,ns
 
@@ -150,7 +163,6 @@ c     read this profile file
          xco=0.
          yco=0.
          zco=0.
-         read(1, *, end=99)
 C     sanity check: this has to have same number of inputs as output from classifaction.f
          do i=1,maxl
             read(1, *, end=99) (ce(j,i), j=1,19), cebin
@@ -328,25 +340,32 @@ c     this is rather self-consistency check, only do for small files
          do i=2,maxl-1
             maccum=maccum+ces(4,i)
 !************
-            epot1=0 ! this is "inside a sphere" potential energy  
-            do icheck=2,maxl
-               if(i.ne.icheck) then
-                  rv=sqrt( (ces(1,i)-ces(1,icheck))**2 
-     &                 + (ces(2,i)-ces(2,icheck))**2
-     &                 + (ces(3,i)-ces(3,icheck))**2)
-                  if(ces(25,icheck).le.ces(25,i)) then
-                     epot1=epot1-1.907*ces(4,icheck)/rv
-                  else
-                     exit
+            epot1=0.             ! this is "inside a sphere" potential energy
+            if(fegrav.eq.1) then
+               do icheck=2,maxl
+                  if(i.ne.icheck) then
+                     rv=sqrt( (ces(1,i)-ces(1,icheck))**2 
+     &                    + (ces(2,i)-ces(2,icheck))**2
+     &                    + (ces(3,i)-ces(3,icheck))**2)
+                     if(ces(25,icheck).le.ces(25,i)) then
+                        epot1=epot1-1.907*ces(4,icheck)/rv
+                     else
+                        exit
+                     end if
                   end if
-               end if
-            end do
-            rv=sqrt( (ce(1,1)-ces(1,i))**2 
-     &           + (ce(2,1)-ces(2,i))**2
-     &           + (ce(3,1)-ces(3,i))**2)
-            epot1=epot1-1.907*ce(4,1)/rv  
+               end do
+               rv=sqrt( (ce(1,1)-ces(1,i))**2 
+     &              + (ce(2,1)-ces(2,i))**2
+     &              + (ce(3,1)-ces(3,i))**2)
+               epot1=epot1-1.907*ce(4,1)/rv  
+            else
+               rv=sqrt( (ce(1,1)-ces(1,i))**2 
+     &              + (ce(2,1)-ces(2,i))**2
+     &              + (ce(3,1)-ces(3,i))**2)
+               epot1=epot1-1.907*maccum/rv  
+            end if
 
-c     this is if there is a second core
+c     this is if there is a second special particle
             if(ces(25,maxl).le.ces(25,i)) then
                rv=sqrt( (ces(1,i)-ce(1,maxl))**2 
      &              + (ces(2,i)-ce(2,maxl))**2
