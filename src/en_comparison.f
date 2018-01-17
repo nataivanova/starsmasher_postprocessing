@@ -22,6 +22,7 @@ c     this code compares energies in 3D vs original 1D profile
 
       real*8  eint_sph(nmax_sph), epot_sph(nmax_sph), m_sph(nmax_sph)
       real*8  eint_mesa(10000),epot_mesa(10000),m_mesa(10000)
+      real*8  eisp_mesa(10000),epsp_mesa(10000),s_mesa(10000)
       real*8  ei_sp,ep_sp, dm, dummy7
       real*8  r_mesa(10000),dummy1,dummy2, dummy3,dummy4,dummy5,dummy6
       real*8  eint_accum, epot_accum, m_error
@@ -53,7 +54,7 @@ c      real*8 age, mcur, var(25)
 
 c     attantion! check with sortit.f how many variables are not in the output
       nvars=26
-      dm_err=0.01               ! dm fow which accumulated energy error is found
+      dm_err=0.005               ! dm fow which accumulated energy error is found
       
 c default values      
       file_sph='sorted_0000.dat'
@@ -159,9 +160,9 @@ c
       do i=maxl,1,-1
          j=maxl-i+1
          m_sph(j)=ce(1,i)
-         eint_accum=eint_accum+(ce(7,i)/1.e13) *ce(3,i)*(Msun/1.e33)
+         eint_accum=eint_accum+ce(7,i)*ce(3,i)*Msun
          eint_sph(j)=eint_accum
-         epot_accum=epot_accum+(ce(10,i)*100.)*ce(3,i)*(Msun/1.e33)
+         epot_accum=epot_accum+ce(10,i)*ce(3,i)*Msun
          epot_sph(j)=epot_accum         
       end do
 
@@ -175,9 +176,12 @@ c     read mesa file
      &        dummy4, dummy5, dummy6, ei_sp, dummy7
          if(i.gt.1) then
             dm=m_mesa(i-1)-m_mesa(i)
-            ep_sp=-(G*Msun/1.e33)*(Msun/1.e13/Rsun)*m_mesa(i)/(10.**r_mesa(i))
-            epot_accum=epot_accum+dm*ep_sp
-            eint_accum=eint_accum+(ei_sp/1.e13)*dm*(Msun/1.e33)
+            ep_sp=-(G*Msun/Rsun)*m_mesa(i-1)/(10.**r_mesa(i))
+            eisp_mesa(i)=ei_sp
+            epsp_mesa(i)=ep_sp
+            s_mesa(i)=dummy6
+            epot_accum=epot_accum+ep_sp*(dm*Msun)
+            eint_accum=eint_accum+ei_sp*(dm*Msun)
             eint_mesa(i)=eint_accum
             epot_mesa(i)=epot_accum
          end if
@@ -216,13 +220,18 @@ c     read mesa file
             j=j+1
          end do
          write(2,100) m_error,  m_sph(j), m_mesa(k),
-     &        eint_sph(j), eint_mesa(k),
+     &        eint_sph(j)/1.d48, eint_mesa(k)/1.d48,
      &        (eint_sph(j)-eint_mesa(k))/eint_mesa(k),
-     &        epot_sph(j), epot_mesa(k),
-     &        (epot_sph(j)-epot_mesa(k))/epot_mesa(k)
+     &        epot_sph(j)/1.d48, epot_mesa(k)/1.d48,
+     &        (epot_sph(j)-epot_mesa(k))/epot_mesa(k),
+     &        (epot_sph(j)+eint_sph(j))/1.d48, (epot_mesa(k)+eint_mesa(k))/1.d48,
+     &        (epot_sph(j)+eint_sph(j)-epot_mesa(k)-eint_mesa(k))/(epot_mesa(k)+eint_mesa(k)),
+     &        ce(7,j),  eisp_mesa(k), (ce(7,j)-eisp_mesa(k))/eisp_mesa(k),
+     &        ce(10,j), epsp_mesa(k), (ce(10,j)-epsp_mesa(k))/epsp_mesa(k),
+     &        ce(6,j)/8.314e7,  s_mesa(k),    (ce(6,j)/8.314e7-s_mesa(k))/s_mesa(k)
       enddo
       close(2)
- 100     format(9e13.5)
+ 100     format(21e12.4)
          
  42   continue
       

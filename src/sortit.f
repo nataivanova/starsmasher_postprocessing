@@ -6,6 +6,8 @@
       parameter (nmax_sph=800000)
       integer max_im, max_in
       parameter (max_im=5000, max_in=1000)
+      real*8 Msun, Rsun, G
+      parameter(Msun=1.9891d33,Rsun=6.9599d10,G=6.67390d-8) 
 
       integer :: num_args, ix
       character(len=12), dimension(:), allocatable :: args
@@ -24,7 +26,7 @@
       integer cestats(nmax_sph)
       integer list(nmax_sph)
       integer sr(max_im,max_in), listsr(max_im),innmax(max_im)
-      real*8 mass_min, mass_max, age_min, age_max
+      real*8 mass_min, mass_max, age_min, age_max, ep_conv
       real wconv, w, rmin, rcur
 
       real epot1, rv
@@ -337,6 +339,7 @@ c     this is rather self-consistency check, only do for small files
          ces(25,maxl)= sqrt( (ce(1,maxl))**2 
      &        + (ce(2,maxl))**2
      &        + (ce(3,maxl))**2)
+         ep_conv=G*Msun/Rsun
          do i=2,maxl-1
             maccum=maccum+ces(4,i)
 !************
@@ -348,7 +351,7 @@ c     this is rather self-consistency check, only do for small files
      &                    + (ces(2,i)-ces(2,icheck))**2
      &                    + (ces(3,i)-ces(3,icheck))**2)
                      if(ces(25,icheck).le.ces(25,i)) then
-                        epot1=epot1-1.907*ces(4,icheck)/rv
+                        epot1=epot1-ep_conv*ces(4,icheck)/rv
                      else
                         exit
                      end if
@@ -357,12 +360,12 @@ c     this is rather self-consistency check, only do for small files
                rv=sqrt( (ce(1,1)-ces(1,i))**2 
      &              + (ce(2,1)-ces(2,i))**2
      &              + (ce(3,1)-ces(3,i))**2)
-               epot1=epot1-1.907*ce(4,1)/rv  
+               epot1=epot1-ep_conv*ce(4,1)/rv  
             else
                rv=sqrt( (ce(1,1)-ces(1,i))**2 
      &              + (ce(2,1)-ces(2,i))**2
      &              + (ce(3,1)-ces(3,i))**2)
-               epot1=epot1-1.907*maccum/rv  
+               epot1=epot1-ep_conv*maccum/rv  
             end if
 
 c     this is if there is a second special particle
@@ -370,7 +373,7 @@ c     this is if there is a second special particle
                rv=sqrt( (ces(1,i)-ce(1,maxl))**2 
      &              + (ces(2,i)-ce(2,maxl))**2
      &              + (ces(3,i)-ce(3,maxl))**2)
-               epot1=epot1-1.907*ce(4,maxl)/rv  
+               epot1=epot1-ep_conv*ce(4,maxl)/rv  
             end if 
           
 c     distance to the z- axes (later should be replace by rotation axes) going through the center of mass of the binary
