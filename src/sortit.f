@@ -165,14 +165,19 @@ c     read this profile file
          xco=0.
          yco=0.
          zco=0.
+         xcm=0.
+         ycm=0.
+         zcm=0.
+         maccum=0.
 C     sanity check: this has to have same number of inputs as output from classifaction.f
          do i=1,maxl
             read(1, *, end=99) (ce(j,i), j=1,19), cebin
             cestat(i)=1
             if(cebin(1:1).EQ.'c') cestat(i)=2
-            ce(25,i)=sqrt( (ce(1,i)-ce(1,1))**2 
-     &           + (ce(2,i)-ce(2,1))**2
-     &           + (ce(3,i)-ce(3,1))**2)
+            maccum=maccum+ce(4,i)
+            xcm=ce(4,i)*ce(1,i)
+            ycm=ce(4,i)*ce(2,i)
+            zcm=ce(4,i)*ce(3,i)
             if(ce(4,i).ge.0.049.and.i.gt.100.and.ce(5,i).le.1e-20) then
                maxl=i
                xco=ce(1,i)
@@ -187,6 +192,18 @@ C     sanity check: this has to have same number of inputs as output from classi
          write(*,*) 'total lines', maxl
          write(*,*) "core particle", ce(4,1)
 
+
+         xcm=xcm/maccum
+         ycm=xcm/maccum
+         zcm=zcm/maccum
+         write(*,*) "Center of mass of the total system", xcm, ycm, zcm
+         do i=1,maxl
+            ce(25,i)=sqrt( (ce(1,i)-xcm)**2 
+     &           + (ce(2,i)-ycm)**2
+     &           + (ce(3,i)-zcm)**2)            
+         end do
+
+         
          inmax=100      
          immax=(1000*ceiling(maxl/1000.))/inmax
          if(immax.gt.5000) then

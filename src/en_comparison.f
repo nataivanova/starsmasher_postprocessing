@@ -147,7 +147,8 @@ c     xcm center of mass of the binay coordinate
          
 c     
       do i=1,maxl
-         read(1, *) (ce(j,i), j=1,27), cestat(i)
+         k=maxl-i+1
+         read(1, *) (ce(j,k), j=1,27), cestat(k)
 !     current order:
 !     mass, rad, dm_particle, P, rho, entropy, eu, ek, ep, ep_sphere, a.m., a.m.c.m.,
 !     rad to c.m. of the binary, rad to z via c.o.of the binary, rad to rgb z,
@@ -157,13 +158,12 @@ c
 
       eint_accum=0.
       epot_accum=0.
-      do i=maxl,1,-1
-         j=maxl-i+1
-         m_sph(j)=ce(1,i)
+      do i=1,maxl
+         m_sph(i)=ce(1,i)
          eint_accum=eint_accum+ce(7,i)*ce(3,i)*Msun
-         eint_sph(j)=eint_accum
+         eint_sph(i)=eint_accum
          epot_accum=epot_accum+ce(10,i)*ce(3,i)*Msun
-         epot_sph(j)=epot_accum         
+         epot_sph(i)=epot_accum         
       end do
 
       
