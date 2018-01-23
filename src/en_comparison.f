@@ -54,7 +54,8 @@ c      real*8 age, mcur, var(25)
 
 c     attantion! check with sortit.f how many variables are not in the output
       nvars=26
-      dm_err=0.005               ! dm fow which accumulated energy error is found
+      dm_err=0.001              ! dm fow which accumulated energy error is found
+      
       
 c default values      
       file_sph='sorted_0000.dat'
@@ -80,6 +81,7 @@ c     parsing input
                write(*,*) "usage (in [] are the default values):"
                write(*,*) "-nsph  XXXX [sorted_0000.dat]input file after sorting "
                write(*,*) "-nmesa XXXX [mesa.starsmash] parsed 1D mesa profile"
+               write(*,*) "-dm XXXX [0.001] print out with this interval"
                goto 42
             end if
             
@@ -98,6 +100,18 @@ c     parsing input
                end if
                read(args(ix+1),*) file_mesa
                write(*,*) "use MESA profile ", file_mesa
+            end if
+             if(args(ix) == '-dm') then
+               if((ix+1).gt.num_args) then
+                  write(*,*) "need an argument for dm"
+                  goto 42
+               end if
+               read(args(ix+1),*) dm_err
+               if(dm_err.le.0) then
+                  write(*,*) "need positive argument for dm"
+                  goto 42
+               end if
+               write(*,*) "use dm for outputs ", dm_err
             end if
              
          end do
