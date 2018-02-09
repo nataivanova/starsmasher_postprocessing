@@ -366,7 +366,7 @@ c     this is rather self-consistency check, only do for small files
                   if(i.ne.icheck) then
                      rv=sqrt( (ces(1,i)-ces(1,icheck))**2 
      &                    + (ces(2,i)-ces(2,icheck))**2
-     &                    + (ces(3,i)-ces(3,icheck))**2)
+     &                    + (ces(3,i)-ces(3,icheck))**2)+1.e-20
                      if(ces(25,icheck).le.ces(25,i)) then
                         epot1=epot1-ep_conv*ces(4,icheck)/rv
                      else
@@ -376,12 +376,12 @@ c     this is rather self-consistency check, only do for small files
                end do
                rv=sqrt( (ce(1,1)-ces(1,i))**2 
      &              + (ce(2,1)-ces(2,i))**2
-     &              + (ce(3,1)-ces(3,i))**2)
+     &              + (ce(3,1)-ces(3,i))**2)+1.e-20
                epot1=epot1-ep_conv*ce(4,1)/rv  
             else
                rv=sqrt( (ce(1,1)-ces(1,i))**2 
      &              + (ce(2,1)-ces(2,i))**2
-     &              + (ce(3,1)-ces(3,i))**2)
+     &              + (ce(3,1)-ces(3,i))**2)+1.e-20
                epot1=epot1-ep_conv*maccum/rv  
             end if
 
@@ -389,7 +389,7 @@ c     this is if there is a second special particle
             if(ces(25,maxl).le.ces(25,i)) then
                rv=sqrt( (ces(1,i)-ce(1,maxl))**2 
      &              + (ces(2,i)-ce(2,maxl))**2
-     &              + (ces(3,i)-ce(3,maxl))**2)
+     &              + (ces(3,i)-ce(3,maxl))**2)+1.e-20
                epot1=epot1-ep_conv*ce(4,maxl)/rv  
             end if 
           
