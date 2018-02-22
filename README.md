@@ -15,3 +15,4 @@ Three execitables will be made: extract, sortit, enc
 
 Run them all with -h for get some help on what they do.
 
+Test

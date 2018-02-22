@@ -1,5 +1,10 @@
+* This subroutine reads the new_table_opal_kap.tron file that contails opacities
+* It will create 1D -> logT, 1D -> logR and 2D -> logopac
+* R = rho/T6^3
+* T6 = T/10^6
+* the new_table_opal_kap.tron comes from detailed OPAL Opacities taken from
+* https://opalopacity.llnl.gov/existing.html
       subroutine opacfile
-      !include 'common_sph_var.h'
       implicit none
       integer i,j
       logical fileexists
@@ -12,11 +17,10 @@
       character*40 datafile
  
       datafile = 'new_table_opal_kap.tron'
-  
       inquire(file=trim(datafile),exist=fileexists)
       if (.not.fileexists) then
-         print ' *** error: '//trim(datafile)//': file not found ***'
-         stop
+         write(*,*)' *** error: '//trim(datafile)//': file not found ***'
+         call exit(1)
       endif
 
       open(12,file=datafile,status='old')
@@ -24,7 +28,6 @@
       read(12,*)init,(logr(j),j=1,nummaxR)
       do i=1,nummaxT
         read(12,*)logT(i),(logopac(j,i),j=1,nummaxR)
-        !write(*,*)logT(i)
       enddo
       close(12)
       end
