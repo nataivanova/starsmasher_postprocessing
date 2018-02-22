@@ -17,7 +17,12 @@
       real*8 steprhotest,steputest,dummy
       real*8 xxx,yyy,zzz,starmu
       common/abundances/XXX,YYY
-      
+      logical fileInPath
+      inquire(file='sph.eos',exist=fileInPath)
+      if (.not.fileInPath) then
+          write(*,*) "sph.eos does NOT EXIST, make sure to copy it first"
+          call exit(1)
+      endif
       open (43,file='sph.eos')
       read(43,*) xxx
       read(43,*) yyy
