@@ -26,7 +26,7 @@
       external opac_rho_t
       real*8 useeostable
       character*15 filename
-      character*5 sph_type
+      character*5 sph_type, starLabel
       logical core_1,core_2
       integer case_eos, case_run
       common/case_id_all/case_eos, case_run
@@ -510,6 +510,9 @@ C particles around m1 and m2
             lz12 = lz12 + m(i)*((x(i)-cmxbin)*(vyi-cmvybin)-(y(i)-cmybin)*(vxi-cmvxbin))
 
          end if
+
+         if (cc(i).eq.cc(1)) starLabel = " 0 "
+         if (cc(i).ne.cc(1)) starLabel = " 1 "
             
          if(case_eos.eq.0) then
 c     outputs: 19 doubles and a character
@@ -518,14 +521,14 @@ c     if you change here, do chage the reading in sorted.f!
      &           Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
      &           grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
      &           xh1,xhe1,xhe2,
-     &           divv(i)/tunits,kappa,TK, h(i), sph_type
+     &           divv(i)/tunits,kappa,TK, h(i), sph_type, starLabel
          else
             write(10,110)xric,yric,zric,m(i),Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
      &           grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
-     &           divv(i)/tunits,TK,  sph_type
+     &           divv(i)/tunits,TK,  sph_type, starLabel
          endif
- 100  format(19e16.8,A)
- 110  format(14e16.8,A)
+ 100  format(19e16.8,A,A)
+ 110  format(14e16.8,A,A)
  
 
          if(id(i).eq.1) then 
