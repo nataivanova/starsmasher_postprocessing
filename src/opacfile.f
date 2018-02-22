@@ -12,11 +12,10 @@
       character*40 datafile
  
       datafile = 'new_table_opal_kap.tron'
-  
       inquire(file=trim(datafile),exist=fileexists)
       if (.not.fileexists) then
-         print ' *** error: '//trim(datafile)//': file not found ***'
-         stop
+         write(*,*)' *** error: '//trim(datafile)//': file not found ***'
+         call exit(1)
       endif
 
       open(12,file=datafile,status='old')
