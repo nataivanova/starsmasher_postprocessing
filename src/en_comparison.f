@@ -177,7 +177,7 @@ c
          eint_accum=eint_accum+ce(7,i)*ce(3,i)*Msun
          eint_sph(i)=eint_accum
          epot_accum=epot_accum+ce(10,i)*ce(3,i)*Msun
-         epot_sph(i)=epot_accum         
+         epot_sph(i)=epot_accum
       end do
 
       
@@ -233,6 +233,8 @@ c     read mesa file
          do while (m_sph(j).gt.m_mesa(k))
             j=j+1
          end do
+c         write(*,*) "debug ", m_error, k,j, m_mesa(k), m_sph(j),
+c     &        epot_sph(j)/1.d48
          write(2,100) m_error,  m_sph(j), m_mesa(k),
      &        eint_sph(j)/1.d48, eint_mesa(k)/1.d48,
      &        (eint_sph(j)-eint_mesa(k))/eint_mesa(k),

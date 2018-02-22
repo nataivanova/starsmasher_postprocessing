@@ -11,7 +11,7 @@
 
       integer :: num_args, ix
       character(len=12), dimension(:), allocatable :: args
-      integer :: ni,nf,ns, fegrav
+      integer :: ni,nf,ns, fegrav, nrun
       
       integer i,j, k, l, modnum, maxn, maxl, it, im, n, m
       integer num1, num2, numf
@@ -21,7 +21,7 @@
       real*8 dm, dt, dmloc
       real ce(25, nmax_sph) 
       real ces(25, nmax_sph) 
-      real ceone(25), maccum, mbot,mtop
+      real ceone(25), maccum, mbot,mtop, mbind
       integer cestat(nmax_sph)
       integer cestats(nmax_sph)
       integer list(nmax_sph)
@@ -54,6 +54,7 @@ c     defaults
       nf=1000000
       ns=1
       fegrav=0
+      nrun=0
       
 c     parsing input
       num_args = command_argument_count()
@@ -77,6 +78,7 @@ c      write(*,*) "number of arguments", num_args
                write(*,*) "-ns X [1] skip each X file"
                write(*,*) "          it skips all files it can't find, but its faster if ns is given"
                write(*,*) "-egrav X [0] 1 - every particles integration for internal sphere"
+               write(*,*) "-run X  0,[1],2 - zero is for single star, 1 is for a binary case, 2 when all is centered round ejecta"
                goto 42
             end if
             if(args(ix) == '-ni') then
@@ -127,6 +129,18 @@ c      write(*,*) "number of arguments", num_args
                   goto 42
                end if
             end if
+            if(args(ix) == '-run') then
+               if((ix+1).gt.num_args) then
+                  write(*,*) "need an argument for run"
+                  goto 42
+               end if
+               read(args(ix+1),*) nrun
+               write(*,*) "run flag: ", nrun
+               if(nrun.ne.0.and.nrun.ne.1.and.nrun.ne.2) then
+                  write(*,*) "narun: allowed values are only 0,1 or 2"
+                  goto 42
+               end if
+            end if
           end do
       end if
       
@@ -169,21 +183,30 @@ c     read this profile file
          ycm=0.
          zcm=0.
          maccum=0.
+         mbind=0.
 C     sanity check: this has to have same number of inputs as output from classifaction.f
          do i=1,maxl
-            read(1, *, end=99) (ce(j,i), j=1,19), cebin
+ 13         read(1, *, end=99) (ce(j,i), j=1,19), cebin
             cestat(i)=1
+            if(cebin(1:1).EQ.'b') cestat(i)=1
             if(cebin(1:1).EQ.'c') cestat(i)=2
+            if(cebin(1:1).EQ.'e') cestat(i)=3
             maccum=maccum+ce(4,i)
             xcm=ce(4,i)*ce(1,i)
             ycm=ce(4,i)*ce(2,i)
             zcm=ce(4,i)*ce(3,i)
+            if(cestat(i).eq.3) mbind=mbind+ce(4,i)
             if(ce(4,i).ge.0.049.and.i.gt.100.and.ce(5,i).le.1e-20) then
                maxl=i
                xco=ce(1,i)
                yco=ce(2,i)
                zco=ce(3,i)
+               write(*,*) "found the second core", i, ce(4,i)
                exit
+            end if
+            if(cestat(i).ne.3.and.nrun.eq.2) then
+c              we skip this particle from sorting
+               goto 13
             end if
          end do
          close(1)
@@ -347,11 +370,20 @@ c     this is rather self-consistency check, only do for small files
          fileout='sorted_'//prnt//'.dat'
          OPEN(2,FILE=fileout,STATUS='UNKNOWN', err=1003)
          maccum=ce(4,1)
+         if(nrun.eq.2) then
+            write(*,*) "replace core mass by bound mass", maccum, mbind
+            maccum=mbind
+         end if
          xcm=ce(4,maxl)*xco/(ce(4,1) + ce(4,maxl))
          ycm=ce(4,maxl)*yco/(ce(4,1) + ce(4,maxl))
          zcm=ce(4,maxl)*zco/(ce(4,1) + ce(4,maxl))
-         write(2,*) maxl-2, ce(4,1), ce(4,maxl), xco, yco, zco, 
-     &              xcm, ycm, zcm
+         if(nrun.ne.2) then
+            write(2,*) maxl-2, ce(4,1), ce(4,maxl), xco, yco, zco, 
+     &           xcm, ycm, zcm
+         else 
+            write(2,*) maxl-2, mbind, mbind, xco, yco, zco, 
+     &           xcm, ycm, zcm
+         end if
          wconv=1.989*6.96*6.96*10.
          ces(25,maxl)= sqrt( (ce(1,maxl))**2 
      &        + (ce(2,maxl))**2
@@ -366,7 +398,7 @@ c     this is rather self-consistency check, only do for small files
                   if(i.ne.icheck) then
                      rv=sqrt( (ces(1,i)-ces(1,icheck))**2 
      &                    + (ces(2,i)-ces(2,icheck))**2
-     &                    + (ces(3,i)-ces(3,icheck))**2)
+     &                    + (ces(3,i)-ces(3,icheck))**2)+1.e-20
                      if(ces(25,icheck).le.ces(25,i)) then
                         epot1=epot1-ep_conv*ces(4,icheck)/rv
                      else
@@ -376,12 +408,12 @@ c     this is rather self-consistency check, only do for small files
                end do
                rv=sqrt( (ce(1,1)-ces(1,i))**2 
      &              + (ce(2,1)-ces(2,i))**2
-     &              + (ce(3,1)-ces(3,i))**2)
+     &              + (ce(3,1)-ces(3,i))**2)+1.e-20
                epot1=epot1-ep_conv*ce(4,1)/rv  
             else
                rv=sqrt( (ce(1,1)-ces(1,i))**2 
      &              + (ce(2,1)-ces(2,i))**2
-     &              + (ce(3,1)-ces(3,i))**2)
+     &              + (ce(3,1)-ces(3,i))**2)+1.e-20
                epot1=epot1-ep_conv*maccum/rv  
             end if
 
@@ -389,24 +421,33 @@ c     this is if there is a second special particle
             if(ces(25,maxl).le.ces(25,i)) then
                rv=sqrt( (ces(1,i)-ce(1,maxl))**2 
      &              + (ces(2,i)-ce(2,maxl))**2
-     &              + (ces(3,i)-ce(3,maxl))**2)
+     &              + (ces(3,i)-ce(3,maxl))**2)+1.e-20
                epot1=epot1-ep_conv*ce(4,maxl)/rv  
             end if 
           
 c     distance to the z- axes (later should be replace by rotation axes) going through the center of mass of the binary
-            rcb=sqrt( (ces(1,i)-xcm)**2. 
-     &           + (ces(2,i)-ycm)**2. + (ces(3,i)-zcm)**2.)
-            rzcb=sqrt( (ces(1,i)-xcm)**2. 
-     &           + (ces(2,i)-ycm)**2.)
-            rzcc=sqrt( (ces(1,i))**2. 
-     &           + (ces(2,i))**2.)
+            rcb=0.
+            rzcb=0.
+            rzcc=0.
             wcb=0.
             wcc=0.
-            if(rzcb.gt.0) 
-     &           wcb=ces(11,i)/wconv/rzcb/rzcb/ces(4,i)
-            if(rzcc.gt.0) 
-     &           wcc=ces(12,i)/wconv/rzcc/rzcc/ces(4,i)
+            if(nrun.eq.1) then
+               rcb=sqrt( (ces(1,i)-xcm)**2. 
+     &              + (ces(2,i)-ycm)**2. + (ces(3,i)-zcm)**2.)
+               rzcb=sqrt( (ces(1,i)-xcm)**2. 
+     &              + (ces(2,i)-ycm)**2.)
+               rzcc=sqrt( (ces(1,i))**2. 
+     &              + (ces(2,i))**2.)
+               wcb=0.
+               wcc=0.
+            
+               if(rzcb.gt.0) 
+     &              wcb=ces(11,i)/wconv/rzcb/rzcb/ces(4,i)
+               if(rzcc.gt.0) 
+     &              wcc=ces(12,i)/wconv/rzcc/rzcc/ces(4,i)
+            end if
 
+            
             write(2,100) maccum, ces(25,i), ces(4,i), ! mass, rad, dm_particle
      &           ces(5,i),ces(6,i),ces(9,i), ! P, rho, entropy
      &           ces(7,i),       ! specific internal energy

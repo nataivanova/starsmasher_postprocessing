@@ -119,7 +119,7 @@ c     unbound particles, their center of mass and velocity
              if (cc(i).eq.cc(1)) then 
                 id(i) = 1
                 if (u(i).eq.0.d0) then
-                   write(*,*)'Core point in ',1
+                   write(*,*)'Core point in ',1, m(i)
                    idmax1 = i
                    core_1 = .true.
                 else
@@ -131,7 +131,7 @@ c     unbound particles, their center of mass and velocity
              else
                 id(i) = 2
                 if (u(i).eq.0.d0) then
-                   write(*,*)'Core point in ',2
+                   write(*,*)'Core point in ',2, m(i)
                    idmax2 = i
                    core_2 = .true.
                 else
@@ -422,7 +422,7 @@ C particles around m1 and m2
       
       write(20,*) nout,t*tunit,sep,x1c,y1c,z1c,vx1c*vunit,vy1c*vunit,vz1c*vunit
 
-      write(*,*)"fraction of mass",XXX,YYY
+      write(*,*)"fraction of mass",XXX,YYY, nrelax
       
       do i=1,ntot
          if(nrelax.ge.2) then
@@ -460,7 +460,7 @@ C particles around m1 and m2
             if(u(i).gt.0.d0) then
                Pcgs = useeostable(ucgs,rhocgs,3)
                TK = useeostable(ucgs,rhocgs,1)
-               scgs = useeostable(ucgs,rhocgs,4)
+               scgs = useeostable(ucgs,rhocgs,4)              
                call deg_of_ion(rhocgs,TK,XXX,YYY,xe,xh1,xhe1,xhe2,iter)
                kappa = opac_rho_t(rhocgs,TK)
             else
@@ -494,6 +494,8 @@ C particles around m1 and m2
          if(id(i).eq.3) sph_type=' cir '
          if(id(i).eq.4) sph_type=' eje '
          
+
+         if( (1000*(i/1000)).eq.i) write(*,*) "debug", i, id(i), sph_type, m(i)
          
          if (id(i).le.2) then
             
@@ -543,6 +545,11 @@ c     if you change here, do chage the reading in sorted.f!
             vz2 = vz2 + vz(i)*m(i)
          endif
       enddo
+
+
+      write(*,*) "profile swapped out"
+      close(10)
+      
       if(m1.gt.0) then
          x1=x1/m1;y1=y1/m1;z1=z1/m1;vx1=vx1/m1;vy1=vy1/m1;vz1=vz1/m1
       end if
@@ -569,7 +576,6 @@ c     if you change here, do chage the reading in sorted.f!
      &        ' star_2'
       end if
 
-      close(10)
       
  42   continue
       end

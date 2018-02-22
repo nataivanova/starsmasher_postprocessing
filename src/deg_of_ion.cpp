@@ -44,14 +44,21 @@ double Xe(double rho,double T,double X,double Y,double xe){
     return (X*XH1(rho,T,X,Y,xe) + Y/4.0 * (XHe1(rho,T,X,Y,xe) + 2.0 * XHe2(rho,T,X,Y,xe)))/(X + Y/4.0);
 }
 
+// nata: note that this routine is not written well.
+// I placed templorary cut off, but it does not work well at neat neutral ionization, didnt check whether
+// it works for a full ionization at rho>1 g/sm^3.
 void Solve(double rho,double T,double X,double Y,
              double &xh1n,double &xhe1n,double &xhe2n,double &xen,int &iter,double xe0=0.01){
     int i;
     for(i=1;i<10000;i++){
-        xh1n = XH1(rho,T,X,Y,xe0);
-        xhe1n = XHe1(rho,T,X,Y,xe0);
-        xhe2n = XHe2(rho,T,X,Y,xe0);
-        xen = Xe(rho,T,X,Y,xe0);
+      if(T > 1000) {
+	xh1n = XH1(rho,T,X,Y,xe0);
+	xhe1n = XHe1(rho,T,X,Y,xe0);
+	xhe2n = XHe2(rho,T,X,Y,xe0);
+        xen = Xe(rho,T,X,Y,xe0);}      
+      else {
+	xh1n = 0.; xhe1n = 0.;  xhe2n = 0.; xen=0.; 
+      }
         if(abs(xe0-xen) <= 1e-10 ) {iter=i;return;}
         else xe0 =xen;
     }
