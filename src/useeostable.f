@@ -1,3 +1,5 @@
+c This subroutine reads a sph.eos file. Such file should contain the detailed equation of state
+c that will be used as a tabulated EOS.
       subroutine readineostable
       implicit none
       integer n_lower,n_upper,myrank,nprocs,qthreads,q
@@ -17,6 +19,7 @@
       real*8 steprhotest,steputest,dummy
       real*8 xxx,yyy,zzz,starmu
       common/abundances/XXX,YYY
+c reading sph.eos
       logical fileInPath
       inquire(file='sph.eos',exist=fileInPath)
       if (.not.fileInPath) then
@@ -61,7 +64,6 @@ c     See equation (2-15) of Clayton:
       close(43)
 
       print *,'Done reading eos table'
-
       print *, 'numrho=',numrho,'numu=',numu
       
       if(rhotable1.ne.rhotable(1))then
@@ -98,6 +100,8 @@ c     See equation (2-15) of Clayton:
       end
       
       function useeostable(ucgs,rhocgs,which)
+c this function will calculate the following quantities for a given intenal energy
+c and density. All these quantities are in CGS, not code units
 c     which=1 gives temperature
 c     which=2 gives mean molecular mass mu
 c     which=3 gives pressure
@@ -124,30 +128,23 @@ c     which=6 gives Grad_ad
      $     rholow,rhohigh,ulow,uhigh
       integer which
 
-c     utable(iu)=utable(1)+(iu-1)*stepu
-c     so, iu= (utable(iu)-utable(1))/stepu + 1
-
       log10rho=log10(rhocgs)
       log10u=log10(ucgs)
 
-c      irho = min(max(1,int((log10rho-rhotable1)/steprho +1)),numrho-1)
       irho = int((log10rho-rhotable1)/steprho +1)
       iu =   int((log10u-utable1)/stepu +1)
 
       if(irho.ge.1 .and. irho.le.numrho-1 .and. iu.ge.1 .and.
      $     iu.le.numu-1) then
-c      if(irho.ge.1 .and. irho.le.numrho-1) then
 
          rholow=log10rho-(rhotable1+(irho-1)*steprho)
          rhohigh=rhotable1+irho*steprho-log10rho
 
          if(iu.ge.1 .and. iu.le.numu-1) then
             
-c     print *,'  iu=',log10u,log10rho,iu,irho
-            
             ulow=log10u-(utable1+(iu-1)*stepu)
             uhigh=utable1+iu*stepu-log10u
-            
+
 c     Use bi-linear interpolation among the four cartesian
 c     grid points (irho,iu), (irho+1,iu), (irho,iu+1), and (irho+1,iu+1)
             f00=rholow*ulow
@@ -161,9 +158,7 @@ c     grid points (irho,iu), (irho+1,iu), (irho,iu+1), and (irho+1,iu+1)
      $           + f11*eostable(iu,        irho,which))/(steprho*stepu)
             
          else if(iu.le.0) then
-            
-c     print *,'l iu=',log10u,log10rho,iu,irho
-            
+
             if(which.ne.2) then
 c     We are at very low specific internal energy u, where the pressure
 c     or temperature should be nearly proportional to rho*u (at fixed
@@ -182,9 +177,7 @@ c     to smaller u
             endif
             
          else if(iu.ge.numu) then
-            
-c     print *,'h iu=',log10u,log10rho,iu,irho
-            
+
             if(which.eq.3) then
 c     We are at very high specific internal energy u, where the pressure
 c     nearly proportional to u (at fixed rho and composition)
@@ -230,17 +223,12 @@ c     At extreme densities we will use ideal gas + radiation pressure
      $           + uhigh*eostable(iu,  irho,2))/stepu
          endif
 
-c     print *,'input=',qconst*rhocgs/meanmu,
-c     $        -ucgs*rhocgs/arad
-
          if(which.eq.2) then
             useeostable=meanmu
             return
          endif
          call getTemperature(3.d0*boltz*rhocgs/meanmu/arad/2.0d0,
      $        -ucgs*rhocgs/arad,temperature)
-
-!         print *,'irho, iu, meanmu, T=',irho,iu,meanmu,temperature
 
          if(which.eq.1) then
             useeostable=temperature

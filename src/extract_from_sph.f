@@ -1,5 +1,12 @@
+* This is the main program for the extract program.
+* The input must be outXXXXX.sph files
+* Its output could be prof_XXXXX.dat which is a profile for the binary/single star
+* or evolution trajectories for the binary/single star
+* Usage:
+* extract -ni <Initial> -nf <Final> -eos <EOS_CASE>
+* use -h for help
       program main
-      
+
       include 'common_sph_var.h'
       
       integer :: i,ni,nf,ns, flag_read
