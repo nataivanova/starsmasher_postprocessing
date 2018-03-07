@@ -21,7 +21,7 @@ c the rho and T are converted to T6 = T/10^6 and r = rho/T6^3
 C check that the value of logR is more than -8 otherwise, just give id_r = 1
       if (y .lt. -8.d0) then
           id_r = 1
-      else2
+      else
 C find the value for the given rho
           do i=1,nummaxR-1
              if ((logR(i).le.logRi).and.(logRi.le.logR(i+1))) then

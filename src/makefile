@@ -22,7 +22,7 @@ LIB = -L/usr/lib -lstdc++ #-lc
 	$(CPP) -c $(CF) $<
 
 
-process_fobj = extract_from_sph.o read_file.o ejecta.o orbital_parameter.o classification.o omega.o useeostable.o getTemperature.o opacfile.o  opac_rho_t_temp.o
+process_fobj = extract_from_sph.o read_file.o ejecta.o classification.o omega.o useeostable.o getTemperature.o opacfile.o  opac_rho_t_temp.o
 process_cobj = roche_potential.o deg_of_ion.o
 process_obj = $(process_fobj) $(process_cobj)
 ${process_fobj}: common_sph_var.h
