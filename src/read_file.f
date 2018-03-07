@@ -1,6 +1,7 @@
       subroutine read_file(ni,flag_read)
+c this subroutine reads the sph output files
       include 'common_sph_var.h'
-      integer :: ni,i, ncheck, flag_read
+      integer ni,i, ncheck, flag_read
       real*8 dummy
       logical it_exists,it_existsb
       character*13 filename
@@ -25,19 +26,18 @@
                goto 42
           endif
       endif
+c read the first line of out*.sph which contains the metadata
       read(10)ntot,nnopt,hmin,hmax,sep0,tf,dtout,nout,nit,t,
      &          nav,alpha,beta,tskipahead,ngr,nrelax,trelax,dt,omega2
-     
+c if this is the first file, dump its output to the stdout
       if (nout.eq.0) then
           write(*,*) "File's header:"
           write(*,102)ntot,nnopt,hmin,hmax,sep0,tf,dtout,nout,nit,t,
      &          nav,alpha,beta,tskipahead,ngr,nrelax,trelax,dt,omega2
  102  format(2I6,5ES15.6,2I6ES15.6,I6,3ES15.6,2I6,3ES15.6)
       endif
-
 c     nata's brutal fix for file's numbering, no idea why Jose's way is getting broken
-      nout=ni
-      
+      nout = ni
       do i=1,ntot
          read(10) x(i),y(i),z(i),m(i),h(i),rho(i),vx(i),vy(i),vz(i),
      &            vxdot(i),vydot(i),vzdot(i),u(i),udot(i),grpot(i),
@@ -45,13 +45,14 @@ c     nata's brutal fix for file's numbering, no idea why Jose's way is getting 
          mu(i)=dummy/mp
       enddo
       read(10) ncheck
+
       if (ncheck.ne.ntot) then 
           write(*,*)'The file is corrupt'
           stop
-      endif 
+      endif
+
       write(*,*)filename,' is read! This file is controlled by nrelax=', nrelax
       close(10)
-
 
  42   continue ! the classic asnwer collects the exits
       
