@@ -131,7 +131,19 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
          call opacfile
       endif
 
-      open(20,file='orbit.dat',status='unknown')
+c 0=dynamical calculation, 1=relaxation of single star,
+c 2=relaxation of binary in corotating frame with centrifugal force
+c 3=calculation rotating frame with centrifugal and Coriolis forces
+
+      if (case_run.ne.1) then
+          open(50,file='conservation.dat',status='unknown')
+          open(51,file='ejecta.dat',status='unknown')
+          open(52,file='binary.dat',status='unknown')
+          open(53,file='ang_mom.dat',status='unknown')
+          open(55,file='circumbinary.dat',status='unknown')
+          open(20,file='orbit.dat',status='unknown')
+      endif
+
  
       do i=ni,nf,ns
          call read_file(i,flag_read)
@@ -144,7 +156,14 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
          end if
       enddo
 
-      close(20)
+      if (case_run.ne.1) then
+          close(50)
+          close(51)
+          close(52)
+          close(53)
+          close(55)
+          close(20)
+      endif
 
  42   continue ! happy end
 
