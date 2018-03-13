@@ -1,6 +1,7 @@
       subroutine classification
+C this subroutine tries to classify the particles for a binary system.
+C Note that this is the beginning of the routine, this routine was designed for Double White Dwarfs
       include 'common_sph_var.h'
-      
       integer i,iter
       real*8 etest,sep,phi1,xL1
       real*8 xL1p,yL1p,theta,zL1p
@@ -99,7 +100,7 @@ c finds center of mass location and velocities, ids particles
             vyi = vy(i)
          endif
          
-         etest = 0.5d0*m(i)*(vxi**2+vyi**2+vz(i)**2)+m(i)*grpot(i)+m(i)*u(i)
+         etest = 0.5d0 * m(i)*(vxi**2+vyi**2+vz(i)**2)+m(i)*grpot(i)+m(i)*u(i)
         
          if(u(i).eq.0.d0) then
              write(*,*)'energy for ',i,' is',etest 
@@ -180,7 +181,6 @@ c     unbound particles, their center of mass and velocity
          if(core_2) idmax2 = ntot
          sep = sqrt((x(idmax1)-x(idmax2))**2+(y(idmax1)-y(idmax2))**2
      &        +(z(idmax1)-z(idmax2))**2)
-c         write(70,*)nout,t*tunit,sep
          c1 = m(idmax1)
          c2 = m(idmax2)
          
@@ -419,8 +419,8 @@ C particles around m1 and m2
       vx1c = vx(1) - omeg * y1c 
       vy1c = vy(1) + omeg * x1c
       vz1c = vz(1)
-      
-      write(20,*) nout,t*tunit,sep,x1c,y1c,z1c,vx1c*vunit,vy1c*vunit,vz1c*vunit
+
+      if (case_run.ne.1) write(20,*) nout,t*tunit,sep,x1c,y1c,z1c,vx1c*vunit,vy1c*vunit,vz1c*vunit
 
       write(*,*)"fraction of mass",XXX,YYY, nrelax
       
@@ -493,9 +493,8 @@ C particles around m1 and m2
          if(id(i).le.2) sph_type=' bin '
          if(id(i).eq.3) sph_type=' cir '
          if(id(i).eq.4) sph_type=' eje '
-         
 
-         if( (1000*(i/1000)).eq.i) write(*,*) "debug", i, id(i), sph_type, m(i)
+c         if( (1000*(i/1000)).eq.i) write(*,*) "debug", i, id(i), sph_type, m(i)
          
          if (id(i).le.2) then
             
