@@ -12,9 +12,10 @@
       integer :: i,ni,nf,ns, flag_read
       integer :: case_eos, case_run
       integer :: num_args, ix
-      character(len=12), dimension(:), allocatable :: args
+      character(len=20), dimension(:), allocatable :: args
+      character :: prof
       
-      common/case_id_all/ case_eos, case_run
+      common/case_id_all/ case_eos, case_run, prof
 
 
 c     defaults
@@ -23,6 +24,7 @@ c     defaults
       ni=0
       nf=1000000
       ns=1
+      prof='Y'
            
 c     parsing input
       num_args = command_argument_count()
@@ -47,6 +49,7 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
                write(*,*) "-ni XXXX [0]       start processing from outXXXX.sph "
                write(*,*) "-nf XXXX [1000000] end processing at outXXXX.sph "
                write(*,*) "-ns X [1] skip each X file"
+               write(*,*) "-prof [Y or N]"
                goto 42
             end if
             if(args(ix) == '-eos') then
@@ -108,6 +111,18 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
                   write(*,*) "ns: only can work with ns > 0"
                   goto 42
                end if
+            end if
+            if(args(ix) == '-prof') then
+                if((ix+1).gt.num_args) then
+                    write(*,*) "need an argument for prof"
+                    goto 42
+                end if
+                read(args(ix+1),*) prof
+                write(*,*) prof, " to profile files"
+                if(prof.ne.'Y'.and.prof.ne.'y'.and.prof.ne.'N'.and.prof.ne.'n') then
+                    write(*,*) "prof: only can work with Y or N"
+                    goto 42
+                end if
             end if
          end do
       

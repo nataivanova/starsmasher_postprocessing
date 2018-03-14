@@ -28,9 +28,10 @@ C Note that this is the beginning of the routine, this routine was designed for 
       real*8 useeostable
       character*15 filename
       character*5 sph_type, starLabel
+      character prof
       logical core_1,core_2
       integer case_eos, case_run
-      common/case_id_all/case_eos, case_run
+      common/case_id_all/case_eos, case_run, prof
       common/sep_max/sep,m1,m2
       common/rho_max/idmax1,idmax2,rhomax1,rhomax2
       common/l_mom/lx12,ly12,lz12
@@ -39,14 +40,16 @@ C Note that this is the beginning of the routine, this routine was designed for 
       common/abundances/XXX,YYY
 
 c     creating the output file
-      if(nout.lt.10000) then 
-         write(filename,200)nout
-      else
-         write(filename,201)nout
+      if (prof.eq.'Y'.or.prof.eq.'y') then
+          if(nout.lt.10000) then
+             write(filename,200)nout
+          else
+             write(filename,201)nout
+          endif
+200       format('prof_',I4.4,'.dat')
+201       format('prof_',I5.5,'.dat')
+          open(10,file=trim(filename))
       endif
- 200  format('prof_',I4.4,'.dat')
- 201  format('prof_',I5.5,'.dat')
-      open(10,file=trim(filename)) 
       
 c     omega is not zero only for a corotating framce
       if(nrelax.ge.2) then 
@@ -512,19 +515,21 @@ c         if( (1000*(i/1000)).eq.i) write(*,*) "debug", i, id(i), sph_type, m(i)
 
          if (cc(i).eq.cc(1)) starLabel = " 0 "
          if (cc(i).ne.cc(1)) starLabel = " 1 "
-            
-         if(case_eos.eq.0) then
+
+         if (prof.eq.'Y'.or.prof.eq.'y') then
+            if(case_eos.eq.0) then
 c     outputs: 19 doubles and a character
 c     if you change here, do chage the reading in sorted.f!
-            write(10,100)   xric,yric,zric,m(i),
-     &           Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
-     &           grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
-     &           xh1,xhe1,xhe2,
-     &           divv(i)/tunits,kappa,TK, h(i), sph_type, starLabel
-         else
-            write(10,110)xric,yric,zric,m(i),Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
-     &           grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
-     &           divv(i)/tunits,TK,  sph_type, starLabel
+                write(10,100)   xric,yric,zric,m(i),
+     &              Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
+     &              grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
+     &              xh1,xhe1,xhe2,
+     &              divv(i)/tunits,kappa,TK, h(i), sph_type, starLabel
+                else
+                    write(10,110)xric,yric,zric,m(i),Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
+     &              grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
+     &              divv(i)/tunits,TK,  sph_type, starLabel
+                endif
          endif
  100  format(19e16.8,A,A)
  110  format(14e16.8,A,A)
