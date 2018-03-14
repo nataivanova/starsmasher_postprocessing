@@ -11,9 +11,9 @@ args=parser.parse_args()
 
 profilename = args.f
 
-print ('Work with the file  {}'.format(profilename))
+print ('Work with the file  {0}'.format(profilename))
 if not os.path.exists(profilename):
-    print 'ERROR: this profile file is not found'
+    print('ERROR: this profile file is not found')
 
 
 p1 = ms.mesa_profile(profilename)
@@ -28,6 +28,6 @@ x8=np.array(p1.get('entropy'))
 x9=np.array(p1.get('energy'))
 x10=np.array(p1.get('logT'))
 
-zipped=zip(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10)
+zipped = list(zip(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10))
 np.savetxt('profile.starsmash', zipped, newline='\n')
 

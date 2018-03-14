@@ -68,22 +68,22 @@ def _read_mesafile(filename, data_rows=0, only='all'):
     
     data = []
 
-for i in range(data_rows):
-    line = f.readline()
-    v = line.split()
-    try:
-        vv = np.array(v, dtype='float64')
+    for i in range(data_rows):
+        line = f.readline()
+        v = line.split()
+        try:
+            vv = np.array(v, dtype='float64')
         except ValueError:
-            for item in v:
-                if item.__contains__('.') and not item.__contains__('E'):
-                    v[v.index(item)] = '0'
-    data.append(vv)
+                for item in v:
+                    if item.__contains__('.') and not item.__contains__('E'):
+                        v[v.index(item)] = '0'
+        data.append(vv)
 
-print(' \n')
-f.close()
-a = np.array(data)
-data = []
-return header_attr, cols, a
+    print(' \n')
+    f.close()
+    a = np.array(data)
+    data = []
+    return header_attr, cols, a
 
 
 def _cleanstarlog(file_in):
@@ -120,11 +120,11 @@ def _cleanstarlog(file_in):
                 nbremove = np.concatenate((nbremove, [i - 1]))
             else:
                 nb = np.concatenate((nb, [int(line.split()[0])]))
-i = -1
+    i = -1
     for j in nbremove:
         lignes.remove(lignes[j])
 
-fout = file(file_out, 'w')
-for j in np.arange(len(lignes)):
-    fout.write(lignes[j])
-    fout.close()
+    fout = file(file_out, 'w')
+    for j in np.arange(len(lignes)):
+        fout.write(lignes[j])
+        fout.close()
