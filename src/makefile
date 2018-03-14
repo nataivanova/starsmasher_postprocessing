@@ -1,8 +1,8 @@
 FC = $(shell which gfortran)
 CPP = $(shell which g++)
 
-FF = -O4 -ffixed-line-length-132
-CF = -O4
+FF = -O3 -ffixed-line-length-132
+CF = -O3
 
 LIB = -L/usr/lib -lstdc++ #-lc
 
