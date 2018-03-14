@@ -1,13 +1,21 @@
+* This is the main program for the extract program.
+* The input must be outXXXXX.sph files
+* Its output could be prof_XXXXX.dat which is a profile for the binary/single star
+* or evolution trajectories for the binary/single star
+* Usage:
+* extract -ni <Initial> -nf <Final> -eos <EOS_CASE>
+* use -h for help
       program main
-      
+
       include 'common_sph_var.h'
       
       integer :: i,ni,nf,ns, flag_read
       integer :: case_eos, case_run
       integer :: num_args, ix
-      character(len=12), dimension(:), allocatable :: args
+      character(len=20), dimension(:), allocatable :: args
+      character :: prof
       
-      common/case_id_all/ case_eos, case_run
+      common/case_id_all/ case_eos, case_run, prof
 
 
 c     defaults
@@ -16,6 +24,7 @@ c     defaults
       ni=0
       nf=1000000
       ns=1
+      prof='Y'
            
 c     parsing input
       num_args = command_argument_count()
@@ -40,6 +49,7 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
                write(*,*) "-ni XXXX [0]       start processing from outXXXX.sph "
                write(*,*) "-nf XXXX [1000000] end processing at outXXXX.sph "
                write(*,*) "-ns X [1] skip each X file"
+               write(*,*) "-prof [Y or N]"
                goto 42
             end if
             if(args(ix) == '-eos') then
@@ -102,6 +112,18 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
                   goto 42
                end if
             end if
+            if(args(ix) == '-prof') then
+                if((ix+1).gt.num_args) then
+                    write(*,*) "need an argument for prof"
+                    goto 42
+                end if
+                read(args(ix+1),*) prof
+                write(*,*) prof, " to profile files"
+                if(prof.ne.'Y'.and.prof.ne.'y'.and.prof.ne.'N'.and.prof.ne.'n') then
+                    write(*,*) "prof: only can work with Y or N"
+                    goto 42
+                end if
+            end if
          end do
       
       end if
@@ -124,7 +146,19 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
          call opacfile
       endif
 
-      open(20,file='orbit.dat',status='unknown')
+c 0=dynamical calculation, 1=relaxation of single star,
+c 2=relaxation of binary in corotating frame with centrifugal force
+c 3=calculation rotating frame with centrifugal and Coriolis forces
+
+      if (case_run.ne.1) then
+          open(50,file='conservation.dat',status='unknown')
+          open(51,file='ejecta.dat',status='unknown')
+          open(52,file='binary.dat',status='unknown')
+          open(53,file='ang_mom.dat',status='unknown')
+          open(55,file='circumbinary.dat',status='unknown')
+          open(20,file='orbit.dat',status='unknown')
+      endif
+
  
       do i=ni,nf,ns
          call read_file(i,flag_read)
@@ -137,7 +171,14 @@ c            write (*,*) "processing  argument ", ix, args(ix), num_args
          end if
       enddo
 
-      close(20)
+      if (case_run.ne.1) then
+          close(50)
+          close(51)
+          close(52)
+          close(53)
+          close(55)
+          close(20)
+      endif
 
  42   continue ! happy end
 

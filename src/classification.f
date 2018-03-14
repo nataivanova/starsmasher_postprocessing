@@ -1,6 +1,7 @@
       subroutine classification
+C this subroutine tries to classify the particles for a binary system.
+C Note that this is the beginning of the routine, this routine was designed for Double White Dwarfs
       include 'common_sph_var.h'
-      
       integer i,iter
       real*8 etest,sep,phi1,xL1
       real*8 xL1p,yL1p,theta,zL1p
@@ -27,9 +28,10 @@
       real*8 useeostable
       character*15 filename
       character*5 sph_type, starLabel
+      character prof
       logical core_1,core_2
       integer case_eos, case_run
-      common/case_id_all/case_eos, case_run
+      common/case_id_all/case_eos, case_run, prof
       common/sep_max/sep,m1,m2
       common/rho_max/idmax1,idmax2,rhomax1,rhomax2
       common/l_mom/lx12,ly12,lz12
@@ -38,14 +40,16 @@
       common/abundances/XXX,YYY
 
 c     creating the output file
-      if(nout.lt.10000) then 
-         write(filename,200)nout
-      else
-         write(filename,201)nout
+      if (prof.eq.'Y'.or.prof.eq.'y') then
+          if(nout.lt.10000) then
+             write(filename,200)nout
+          else
+             write(filename,201)nout
+          endif
+200       format('prof_',I4.4,'.dat')
+201       format('prof_',I5.5,'.dat')
+          open(10,file=trim(filename))
       endif
- 200  format('prof_',I4.4,'.dat')
- 201  format('prof_',I5.5,'.dat')
-      open(10,file=trim(filename)) 
       
 c     omega is not zero only for a corotating framce
       if(nrelax.ge.2) then 
@@ -99,7 +103,7 @@ c finds center of mass location and velocities, ids particles
             vyi = vy(i)
          endif
          
-         etest = 0.5d0*m(i)*(vxi**2+vyi**2+vz(i)**2)+m(i)*grpot(i)+m(i)*u(i)
+         etest = 0.5d0 * m(i)*(vxi**2+vyi**2+vz(i)**2)+m(i)*grpot(i)+m(i)*u(i)
         
          if(u(i).eq.0.d0) then
              write(*,*)'energy for ',i,' is',etest 
@@ -180,7 +184,6 @@ c     unbound particles, their center of mass and velocity
          if(core_2) idmax2 = ntot
          sep = sqrt((x(idmax1)-x(idmax2))**2+(y(idmax1)-y(idmax2))**2
      &        +(z(idmax1)-z(idmax2))**2)
-c         write(70,*)nout,t*tunit,sep
          c1 = m(idmax1)
          c2 = m(idmax2)
          
@@ -419,8 +422,8 @@ C particles around m1 and m2
       vx1c = vx(1) - omeg * y1c 
       vy1c = vy(1) + omeg * x1c
       vz1c = vz(1)
-      
-      write(20,*) nout,t*tunit,sep,x1c,y1c,z1c,vx1c*vunit,vy1c*vunit,vz1c*vunit
+
+      if (case_run.ne.1) write(20,*) nout,t*tunit,sep,x1c,y1c,z1c,vx1c*vunit,vy1c*vunit,vz1c*vunit
 
       write(*,*)"fraction of mass",XXX,YYY, nrelax
       
@@ -493,9 +496,8 @@ C particles around m1 and m2
          if(id(i).le.2) sph_type=' bin '
          if(id(i).eq.3) sph_type=' cir '
          if(id(i).eq.4) sph_type=' eje '
-         
 
-         if( (1000*(i/1000)).eq.i) write(*,*) "debug", i, id(i), sph_type, m(i)
+c         if( (1000*(i/1000)).eq.i) write(*,*) "debug", i, id(i), sph_type, m(i)
          
          if (id(i).le.2) then
             
@@ -513,19 +515,21 @@ C particles around m1 and m2
 
          if (cc(i).eq.cc(1)) starLabel = " 0 "
          if (cc(i).ne.cc(1)) starLabel = " 1 "
-            
-         if(case_eos.eq.0) then
+
+         if (prof.eq.'Y'.or.prof.eq.'y') then
+            if(case_eos.eq.0) then
 c     outputs: 19 doubles and a character
 c     if you change here, do chage the reading in sorted.f!
-            write(10,100)   xric,yric,zric,m(i),
-     &           Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
-     &           grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
-     &           xh1,xhe1,xhe2,
-     &           divv(i)/tunits,kappa,TK, h(i), sph_type, starLabel
-         else
-            write(10,110)xric,yric,zric,m(i),Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
-     &           grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
-     &           divv(i)/tunits,TK,  sph_type, starLabel
+                write(10,100)   xric,yric,zric,m(i),
+     &              Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
+     &              grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
+     &              xh1,xhe1,xhe2,
+     &              divv(i)/tunits,kappa,TK, h(i), sph_type, starLabel
+                else
+                    write(10,110)xric,yric,zric,m(i),Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
+     &              grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
+     &              divv(i)/tunits,TK,  sph_type, starLabel
+                endif
          endif
  100  format(19e16.8,A,A)
  110  format(14e16.8,A,A)

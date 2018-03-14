@@ -1,8 +1,9 @@
+c we want to have all the variables explicitly declared
       implicit none
 c Define the maximum number of particles
       integer nmax
       parameter(nmax=1000000)
-c Definition of variables
+c Definition of StarSmasher variables, these are to match up with the variables names
       integer ntot,nnopt,nout,nit,nav,ngr,nrelax,cc(nmax)
       real*8 hmin,hmax,sep0,tf,dtout,t,alpha,beta,
      &       tskipahead,trelax,dt,omega2
@@ -26,27 +27,32 @@ c Common variables
 c Constants (note that all constant are in cgs units)
       real*8 pi,mp,G,Msun,Rsun,eunit,tunit,eunitm
       real*8 tunits,lunits,lunit,rhounit,vunit
+      real*8 kelvin,gram,sec,cm,erg,boltz,crad,planck,crad2,sigma,arad,
+     &       qconst,punit
+      real*8 mH,NA
+c defining fundamental constants
       parameter(pi=3.1415926535897932384626d0)
       parameter(mp=1.67262158d-24,G=6.67390d-8)
       parameter(Msun=1.9891d33,Rsun=6.9599d10)
-      parameter(eunitm=G*Msun/Rsun*1.0d-15)
-      parameter(eunit=G*Msun**2/Rsun*1.0d-46) 
-      parameter(tunits=sqrt(Rsun**3/G/Msun))
-      parameter(tunit=tunits/60.d0/60.d0/24.d0) !in days
-      parameter(lunits=Rsun**2/tunits)
-      parameter(lunit=Msun*Rsun**2/tunits*1.0d-52)
-      parameter(rhounit=Msun/Rsun**3)
-      parameter(vunit=sqrt(G*Msun/Rsun)*1e-5)
-      real*8 kelvin,gram,sec,cm,erg,boltz,crad,planck,crad2,sigma,arad,
-     $      qconst,punit
-      PARAMETER(gram=1.d0,sec=1.d0,cm=1.d0,kelvin=1.d0)
-      PARAMETER(erg=gram*cm**2/sec**2)
-      PARAMETER(boltz=1.380658d-16*erg/kelvin)
-      parameter(crad = 2.997924580d+10*cm/sec,
-     1      planck = 6.6260755d-27*gram*cm**2/sec)
-      parameter( crad2 = crad**2,
-     3     sigma = pi**2*boltz*(boltz*2.0d0*pi/planck)**3/60.0d0/crad2,
-     4     arad  = 4.0d0*sigma/crad, qconst = 1.5d0*boltz/arad)
-      real*8 mH,NA
       parameter(mH=1.67262158d-24)
       parameter(NA=6.0221417d23)
+
+c definining  derived constants
+      parameter(eunitm = G*Msun/Rsun*1.0d-15)
+      parameter(eunit = G*Msun**2/Rsun*1.0d-46)
+      parameter(tunits = sqrt(Rsun**3/G/Msun))
+      parameter(tunit = tunits/60.d0/60.d0/24.d0) !in days
+      parameter(lunits = Rsun**2/tunits)
+      parameter(lunit = Msun*Rsun**2/tunits*1.0d-52)
+      parameter(rhounit = Msun/Rsun**3)
+      parameter(vunit = sqrt(G*Msun/Rsun)*1e-5)
+
+      parameter(gram=1.d0,sec=1.d0,cm=1.d0,kelvin=1.d0)
+      parameter(erg = gram * cm**2/sec**2)
+      parameter(boltz = 1.380658d-16*erg/kelvin)
+      parameter(crad = 2.997924580d+10*cm/sec,
+     &          planck = 6.6260755d-27*gram*cm**2/sec)
+      parameter(crad2 = crad**2,
+     &          sigma = pi**2*boltz*(boltz*2.0d0*pi/planck)**3/60.0d0/crad2,
+     &          arad  = 4.0d0*sigma/crad,
+     &          qconst = 1.5d0*boltz/arad)

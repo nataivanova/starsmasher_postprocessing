@@ -1,4 +1,8 @@
       subroutine ejecta
+C this subroutine calculates the evolution quantities of a binary star
+c this includes ejecta, circumbinary, and binary, as well as the separation
+c note that it needs id(i) calculated by classification.f, the better the routine, the more accurate
+c this subroutine
       include 'common_sph_var.h'
       integer i
 C Bound material
@@ -6,9 +10,11 @@ C Bound material
       real*8 ekb,epb,eib
 C Ejecta
       real*8 ep,munb,ekunb,epunb,eiunb
-      real*8 lxunb,lyunb,lzunb 
+      real*8 lxunb,lyunb,lzunb
 C Total angular momentum and energy
       real*8 lx,ly,lz,etot
+      real*8 lxi,lyi,lzi
+      real*8 epot, eint, ekin
 C Velocities
       real*8 vtan,vrad,r
 C Circumbinary disk
@@ -44,52 +50,50 @@ C Number of particles
       ekc=0.d0
       epc=0.d0
       eic=0.d0
+
       do i=1,ntot
-C Get the total energy of a particle
-c         ep=0.5d0*(vx(i)**2+vy(i)**2+vz(i)**2)+grpot(i)+u(i)
-C Get the tangential and radial velocity
-         r = sqrt(x(i)**2+y(i)**2+z(i)**2)
-         vrad = x(i)*vx(i)+y(i)*vy(i)+z(i)*vz(i)
-         vrad = vrad/r
-         vtan = sqrt((y(i)*vz(i)-z(i)*vy(i))**2
-     &              +(z(i)*vx(i)-x(i)*vz(i))**2
-     &              +(x(i)*vy(i)-y(i)*vx(i))**2)
-         vtan = vtan/r
-C Check if the total energy of a particle is positive, if so, get ejecta
-         if (id(i).eq.4) then
-            munb=munb+m(i)
-            ekunb=ekunb+0.5d0*m(i)*(vx(i)**2+vy(i)**2+vz(i)**2)
-            eiunb=eiunb+m(i)*u(i)
-            epunb=epunb+m(i)*grpot(i)
-            lxunb = lxunb + m(i)*(y(i)*vz(i)-z(i)*vy(i))
-            lyunb = lyunb + m(i)*(z(i)*vx(i)-x(i)*vz(i))
-            lzunb = lzunb + m(i)*(x(i)*vy(i)-y(i)*vx(i))
+c energy for each particle
+         epot = m(i) * grpot(i)
+         eint = m(i) * u(i)
+         ekin = 0.5d0 * m(i) * (vx(i)**2 + vy(i)**2 + vz(i)**2)
+c angular momentum for each particle
+         lxi = m(i) * (y(i)*vz(i)-z(i)*vy(i))
+         lyi = m(i) * (z(i)*vx(i)-x(i)*vz(i))
+         lzi = m(i) * (x(i)*vy(i)-y(i)*vx(i))
+c use the id(i) to determine where the particles are
+         if (id(i).eq.4) then ! this will be ejecta
+            munb = munb+m(i)
+            ekunb = ekunb + ekin
+            eiunb = eiunb + eint
+            epunb = epunb + epot
+            lxunb = lxunb + lxi
+            lyunb = lyunb + lyi
+            lzunb = lzunb + lzi
             cmunb = cmunb + 1
-         elseif(id(i).le.2) then 
-            !write(70,*)i,x(i),y(i),z(i),vrad,vtan,vx(i),vy(i),vz(i)
+         elseif(id(i).le.2) then ! this will be binary star
             mb = mb + m(i)
-            ekb=ekb+0.5d0*m(i)*(vx(i)**2+vy(i)**2+vz(i)**2)
-            eib=eib+m(i)*u(i)
-            epb=epb+m(i)*grpot(i)
-            lxb = lxb + m(i)*(y(i)*vz(i)-z(i)*vy(i))
-            lyb = lyb + m(i)*(z(i)*vx(i)-x(i)*vz(i))
-            lzb = lzb + m(i)*(x(i)*vy(i)-y(i)*vx(i))
+            ekb = ekb + ekin
+            eib = eib + eint
+            epb = epb + epot
+            lxb = lxb + lxi
+            lyb = lyb + lyi
+            lzb = lzb + lzi
             cmb = cmb + 1
-         else
+         else !then circumbinary
             mc = mc + m(i)
-            ekc=ekc+0.5d0*m(i)*(vx(i)**2+vy(i)**2+vz(i)**2)
-            eic=eic+m(i)*u(i)
-            epc=epc+m(i)*grpot(i)
-            lxc = lxc + m(i)*(y(i)*vz(i)-z(i)*vy(i))
-            lyc = lyc + m(i)*(z(i)*vx(i)-x(i)*vz(i))
-            lzc = lzc + m(i)*(x(i)*vy(i)-y(i)*vx(i))
+            ekc = ekc + ekin
+            eic = eic + eint
+            epc = epc + epot
+            lxc = lxc + lxi
+            lyc = lyc + lyi
+            lzc = lzc + lzi
             cmc = cmc + 1
          endif
 C Get the total angular momentum and energy
-         etot = etot + 0.5d0*m(i)*(vx(i)**2+vy(i)**2+vz(i)**2)+0.5d0*m(i)*grpot(i)+m(i)*u(i)
-         lx = lx + m(i)*(y(i)*vz(i)-z(i)*vy(i))
-         ly = ly + m(i)*(z(i)*vx(i)-x(i)*vz(i))
-         lz = lz + m(i)*(x(i)*vy(i)-y(i)*vx(i))
+         etot = etot + ekin + 0.5d0 * epot + eint
+         lx = lx + lxi
+         ly = ly + lyi
+         lz = lz + lzi
       enddo
       write(50,*)t*tunit,etot*eunit,sqrt(lx**2+ly**2+lz**2)
       write(51,*)t*tunit,munb,ekunb*eunit,eiunb*eunit,epunb*eunit,cmunb
