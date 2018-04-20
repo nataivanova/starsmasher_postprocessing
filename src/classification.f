@@ -426,152 +426,153 @@ C particles around m1 and m2
       if (case_run.ne.1) write(20,*) nout,t*tunit,sep,x1c,y1c,z1c,vx1c*vunit,vy1c*vunit,vz1c*vunit
 
       write(*,*)"fraction of mass",XXX,YYY, nrelax
-      
-      do i=1,ntot
-         if(nrelax.ge.2) then
-           vxi = vx(i) - omeg * y(i)
-           vyi = vy(i) + omeg * x(i)
-         else
-           vxi = vx(i)
-           vyi = vy(i)
-         endif
-         rhocgs = rho(i)*Msun/Rsun**3.d0
-         ucgs = u(i)*G*Msun/Rsun
-         vxric =  vxi - vx1c
-         vyric =  vyi - vy1c
-         vzric = vz(i)- vz1c
-         xric = x(i) - x1c
-         yric = y(i) - y1c
-         zric = z(i) - z1c
-         vxricm =  vxi - cmvxbin
-         vyricm =  vyi - cmvybin
-         vzricm = vz(i)- cmvzbin
-         xricm = x(i) - cmxbin
-         yricm = y(i) - cmybin
-         zricm = z(i) - cmzbin
-         rad = sqrt(xric**2+yric**2+zric**2)
-         vrad = (xric*vxric+yric*vyric+zric+vzric)/rad
-         ekincgs = 0.5*(vxi**2+vyi**2+vz(i)**2)*eunitm
-         eradcgs = m(i)*vrad**2*eunit
-         lxi = m(i)*(yric*vzric-zric*vyric)
-         lyi = m(i)*(zric*vxric-xric*vzric)
-         lzi = m(i)*(xric*vyric-yric*vxric)
-         lxic = m(i)*(yricm*vzricm-zricm*vyricm)
-         lyic = m(i)*(zricm*vxricm-xricm*vzricm)
-         lzic = m(i)*(xricm*vyricm-yricm*vxricm)
-         if(case_eos.eq.0) then 
-            if(u(i).gt.0.d0) then
-               Pcgs = useeostable(ucgs,rhocgs,3)
-               TK = useeostable(ucgs,rhocgs,1)
-               scgs = useeostable(ucgs,rhocgs,4)              
-               call deg_of_ion(rhocgs,TK,XXX,YYY,xe,xh1,xhe1,xhe2,iter)
-               kappa = opac_rho_t(rhocgs,TK)
-            else
-               Pcgs = 0.d0
-               TK = 0.d0
-               scgs = 0.d0
-               xh1=1.d0
-               xhe1=0.d0
-               xhe2=1.d0
-               xe=(XXX*xh1+YYY/4.0d0*(xhe1+2.d0*xhe2))/(XXX+YYY/4.0d0)
-               iter=0
-               kappa=0.d0
-            endif 
-            if(kappa.ne.0.d0) kappa=10**(kappa)
-         else
-            if(u(i).gt.0.d0) then
-               call getTemperature(qconst*rhocgs/(mu(i)*mp),
-     $              -ucgs*rhocgs/arad,TK)
-               scgs = 3.0*log(TK/rhocgs**(2.0/3.0))/(2.0*(mu(i)*mp)/mH)
-     $              + 4.0*arad*TK**3.0/(3.0*rhocgs)/boltz/NA
-               Pcgs = rhocgs*boltz*TK/(mu(i)*mp) + arad*TK**4/3.d0
-            else
-               TK = 0.0d0
-               scgs = 0.d0
-               Pcgs = 0.d0
-            endif
-         endif
+
+      if (prof.eq.'Y'.or.prof.eq.'y') then
+          do i=1,ntot
+             if(nrelax.ge.2) then
+               vxi = vx(i) - omeg * y(i)
+               vyi = vy(i) + omeg * x(i)
+             else
+               vxi = vx(i)
+               vyi = vy(i)
+             endif
+             rhocgs = rho(i)*Msun/Rsun**3.d0
+             ucgs = u(i)*G*Msun/Rsun
+             vxric =  vxi - vx1c
+             vyric =  vyi - vy1c
+             vzric = vz(i)- vz1c
+             xric = x(i) - x1c
+             yric = y(i) - y1c
+             zric = z(i) - z1c
+             vxricm =  vxi - cmvxbin
+             vyricm =  vyi - cmvybin
+             vzricm = vz(i)- cmvzbin
+             xricm = x(i) - cmxbin
+             yricm = y(i) - cmybin
+             zricm = z(i) - cmzbin
+             rad = sqrt(xric**2+yric**2+zric**2)
+             vrad = (xric*vxric+yric*vyric+zric+vzric)/rad
+             ekincgs = 0.5*(vxi**2+vyi**2+vz(i)**2)*eunitm
+             eradcgs = m(i)*vrad**2*eunit
+             lxi = m(i)*(yric*vzric-zric*vyric)
+             lyi = m(i)*(zric*vxric-xric*vzric)
+             lzi = m(i)*(xric*vyric-yric*vxric)
+             lxic = m(i)*(yricm*vzricm-zricm*vyricm)
+             lyic = m(i)*(zricm*vxricm-xricm*vzricm)
+             lzic = m(i)*(xricm*vyricm-yricm*vxricm)
+             if(case_eos.eq.0) then
+                if(u(i).gt.0.d0) then
+                   Pcgs = useeostable(ucgs,rhocgs,3)
+                   TK = useeostable(ucgs,rhocgs,1)
+                   scgs = useeostable(ucgs,rhocgs,4)
+                   call deg_of_ion(rhocgs,TK,XXX,YYY,xe,xh1,xhe1,xhe2,iter)
+                   kappa = opac_rho_t(rhocgs,TK)
+                else
+                   Pcgs = 0.d0
+                   TK = 0.d0
+                   scgs = 0.d0
+                   xh1=1.d0
+                   xhe1=0.d0
+                   xhe2=1.d0
+                   xe=(XXX*xh1+YYY/4.0d0*(xhe1+2.d0*xhe2))/(XXX+YYY/4.0d0)
+                   iter=0
+                   kappa=0.d0
+                endif
+                if(kappa.ne.0.d0) kappa=10**(kappa)
+             else
+                if(u(i).gt.0.d0) then
+                   call getTemperature(qconst*rhocgs/(mu(i)*mp),
+     $                      -ucgs*rhocgs/arad,TK)
+                   scgs = 3.0*log(TK/rhocgs**(2.0/3.0))/(2.0*(mu(i)*mp)/mH)
+     $                      + 4.0*arad*TK**3.0/(3.0*rhocgs)/boltz/NA
+                   Pcgs = rhocgs*boltz*TK/(mu(i)*mp) + arad*TK**4/3.d0
+                else
+                   TK = 0.0d0
+                   scgs = 0.d0
+                   Pcgs = 0.d0
+                endif
+             endif
 
 
-         if(id(i).le.2) sph_type=' bin '
-         if(id(i).eq.3) sph_type=' cir '
-         if(id(i).eq.4) sph_type=' eje '
+             if(id(i).le.2) sph_type=' bin '
+             if(id(i).eq.3) sph_type=' cir '
+             if(id(i).eq.4) sph_type=' eje '
 
 c         if( (1000*(i/1000)).eq.i) write(*,*) "debug", i, id(i), sph_type, m(i)
-         
-         if (id(i).le.2) then
-            
-            Ixx = Ixx + m(i)*((y(i)-cmybin)**2+(z(i)-cmzbin)**2)
-            Iyy = Iyy + m(i)*((x(i)-cmxbin)**2+(z(i)-cmzbin)**2)
-            Izz = Izz + m(i)*((x(i)-cmxbin)**2+(y(i)-cmybin)**2)
-            Ixy = Ixy - m(i)*(x(i)-cmzbin)*(y(i)-cmybin)
-            Iyz = Iyz - m(i)*(z(i)-cmzbin)*(y(i)-cmybin)
-            Ixz = Ixz - m(i)*(x(i)-cmxbin)*(z(i)-cmzbin)
-            lx12 = lx12 + m(i)*((y(i)-cmybin)*(vz(i)-cmvzbin)-(z(i)-cmzbin)*(vyi-cmvybin))
-            ly12 = ly12 + m(i)*((z(i)-cmzbin)*(vxi-cmvxbin)-(x(i)-cmxbin)*(vz(i)-cmvzbin))
-            lz12 = lz12 + m(i)*((x(i)-cmxbin)*(vyi-cmvybin)-(y(i)-cmybin)*(vxi-cmvxbin))
 
-         end if
+             if (id(i).le.2) then
 
-         if (cc(i).eq.cc(1)) starLabel = " 0 "
-         if (cc(i).ne.cc(1)) starLabel = " 1 "
+                Ixx = Ixx + m(i)*((y(i)-cmybin)**2+(z(i)-cmzbin)**2)
+                Iyy = Iyy + m(i)*((x(i)-cmxbin)**2+(z(i)-cmzbin)**2)
+                Izz = Izz + m(i)*((x(i)-cmxbin)**2+(y(i)-cmybin)**2)
+                Ixy = Ixy - m(i)*(x(i)-cmzbin)*(y(i)-cmybin)
+                Iyz = Iyz - m(i)*(z(i)-cmzbin)*(y(i)-cmybin)
+                Ixz = Ixz - m(i)*(x(i)-cmxbin)*(z(i)-cmzbin)
+                lx12 = lx12 + m(i)*((y(i)-cmybin)*(vz(i)-cmvzbin)-(z(i)-cmzbin)*(vyi-cmvybin))
+                ly12 = ly12 + m(i)*((z(i)-cmzbin)*(vxi-cmvxbin)-(x(i)-cmxbin)*(vz(i)-cmvzbin))
+                lz12 = lz12 + m(i)*((x(i)-cmxbin)*(vyi-cmvybin)-(y(i)-cmybin)*(vxi-cmvxbin))
 
-         if (prof.eq.'Y'.or.prof.eq.'y') then
-            if(case_eos.eq.0) then
+             end if
+
+             if (cc(i).eq.cc(1)) starLabel = " 0 "
+             if (cc(i).ne.cc(1)) starLabel = " 1 "
+
+             if (prof.eq.'Y'.or.prof.eq.'y') then
+                if(case_eos.eq.0) then
 c     outputs: 19 doubles and a character
 c     if you change here, do chage the reading in sorted.f!
-                write(10,100)   xric,yric,zric,m(i),
-     &              Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
-     &              grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
-     &              xh1,xhe1,xhe2,
-     &              divv(i)/tunits,kappa,TK, h(i), sph_type, starLabel
-                else
-                    write(10,110)xric,yric,zric,m(i),Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
-     &              grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
-     &              divv(i)/tunits,TK,  sph_type, starLabel
-                endif
-         endif
- 100  format(19e16.8,A,A)
- 110  format(14e16.8,A,A)
- 
-
-         if(id(i).eq.1) then 
-            x1 = x1 + x(i)*m(i)
-            y1 = y1 + y(i)*m(i)
-            z1 = z1 + z(i)*m(i)
-            vx1 = vx1 + vxi*m(i)
-            vy1 = vy1 + vyi*m(i)
-            vz1 = vz1 + vz(i)*m(i)
-         endif
-         if(id(i).eq.2) then
-            x2 = x2 + x(i)*m(i)
-            y2 = y2 + y(i)*m(i)
-            z2 = z2 + z(i)*m(i)
-            vx2 = vx2 + vxi*m(i)
-            vy2 = vy2 + vyi*m(i)
-            vz2 = vz2 + vz(i)*m(i)
-         endif
-      enddo
+                    write(10,100)   xric,yric,zric,m(i),
+     &                      Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
+     &                      grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
+     &                      xh1,xhe1,xhe2,
+     &                      divv(i)/tunits,kappa,TK, h(i), sph_type, starLabel
+                    else
+                        write(10,110)xric,yric,zric,m(i),Pcgs,rhocgs,ucgs,ekincgs*1d15,scgs,
+     &                      grpot(i)*eunitm*1d15,lzic*lunit,lzi*lunit,
+     &                      divv(i)/tunits,TK,  sph_type, starLabel
+                    endif
+             endif
+100       format(19e16.8,A,A)
+110       format(14e16.8,A,A)
 
 
-      write(*,*) "profile swapped out"
-      close(10)
-      
-      if(m1.gt.0) then
-         x1=x1/m1;y1=y1/m1;z1=z1/m1;vx1=vx1/m1;vy1=vy1/m1;vz1=vz1/m1
-      end if
-      if(m2.gt.0) then
-         x2=x2/m2;y2=y2/m2;z2=z2/m2;vx2=vx2/m2;vy2=vy2/m2;vz2=vz2/m2
-      end if
-         
-      write(*,*)t*tunit,x1,y1,z1,vx1,vy1,vz1,x2,y2,z2,vx2,vy2,vz2,'aft' 
+             if(id(i).eq.1) then
+                x1 = x1 + x(i)*m(i)
+                y1 = y1 + y(i)*m(i)
+                z1 = z1 + z(i)*m(i)
+                vx1 = vx1 + vxi*m(i)
+                vy1 = vy1 + vyi*m(i)
+                vz1 = vz1 + vz(i)*m(i)
+             endif
+             if(id(i).eq.2) then
+                x2 = x2 + x(i)*m(i)
+                y2 = y2 + y(i)*m(i)
+                z2 = z2 + z(i)*m(i)
+                vx2 = vx2 + vxi*m(i)
+                vy2 = vy2 + vyi*m(i)
+                vz2 = vz2 + vz(i)*m(i)
+             endif
+          enddo
 
-      if(case_run.eq.0.and.core_1.and.core_2) then 
-         write(*,*)'I tensor',Ixx,Iyy,Izz,Ixy,Ixz,Iyz
-         write(*,*)'L vec',lx12,ly12,lz12
-         call omega_vec(Ixx,Iyy,Izz,Ixy,Ixz,Iyz,lx12,ly12,lz12,omegax,omegay,omegaz)
-         write(*,*)'Omega (x,y,z)',omegax/tunit,omegay/tunit,omegaz/tunit
-         write(*,*)t*tunit,m1,m2,cmmbin,cmxbin,cmybin,cmzbin,
+          write(*,*) "profile swapped out"
+          close(10)
+
+
+          if(m1.gt.0) then
+             x1=x1/m1;y1=y1/m1;z1=z1/m1;vx1=vx1/m1;vy1=vy1/m1;vz1=vz1/m1
+          end if
+          if(m2.gt.0) then
+             x2=x2/m2;y2=y2/m2;z2=z2/m2;vx2=vx2/m2;vy2=vy2/m2;vz2=vz2/m2
+          end if
+
+          write(*,*)t*tunit,x1,y1,z1,vx1,vy1,vz1,x2,y2,z2,vx2,vy2,vz2,'aft'
+
+          if(case_run.eq.0.and.core_1.and.core_2) then
+             write(*,*)'I tensor',Ixx,Iyy,Izz,Ixy,Ixz,Iyz
+             write(*,*)'L vec',lx12,ly12,lz12
+             call omega_vec(Ixx,Iyy,Izz,Ixy,Ixz,Iyz,lx12,ly12,lz12,omegax,omegay,omegaz)
+             write(*,*)'Omega (x,y,z)',omegax/tunit,omegay/tunit,omegaz/tunit
+             write(*,*)t*tunit,m1,m2,cmmbin,cmxbin,cmybin,cmzbin,
      &        cmvxbin*vunit,cmvybin*vunit,cmvzbin*vunit,' bin_evol'
          write(*,*)t*tunit,2.d0*pi/(sqrt(omegax**2+omegay**2+omegaz**2))*tunit,
      &        'Period'
@@ -581,8 +582,8 @@ c     if you change here, do chage the reading in sorted.f!
          write(*,*)t*tunit,m2,x2-cmxbin,y2-cmybin,z2-cmzbin,
      &        (vx2-cmvxbin)*vunit,(vy2-cmvybin)*vunit,(vz2-cmvzbin)*vunit,
      &        ' star_2'
-      end if
-
+        end if
+      endif
       
  42   continue
       end

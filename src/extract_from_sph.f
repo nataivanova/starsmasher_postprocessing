@@ -165,7 +165,7 @@ c 3=calculation rotating frame with centrifugal and Coriolis forces
          if(flag_read.eq.0) then
             write(*,*) "process ", ni
             call classification
-            if(case_run.eq.0) then
+            if(case_run.eq.0.or.case_run.ge.2) then
                call ejecta
             end if
          end if
